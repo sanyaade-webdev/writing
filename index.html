@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+
+  <title>Writing made minimal.</title>
+
+  <style>
+    @import url(http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic);
+    @import url(http://fonts.googleapis.com/css?family=Merriweather:400,900);
+
+    p,
+    h1,
+    h2,
+    body,
+    header,
+    article,
+    section {
+      margin: 0;
+      padding: 0;
+      border: 0;
+      font-size: 100%;
+      font: inherit;
+      vertical-align: baseline;
+    }
+
+    header,
+    article,
+    section {
+      display: block;
+    }
+
+    body {
+      background: #FFF;
+      color: #555;
+      width: 704px;
+      margin: 0 auto;
+      padding: 32px;
+      font-family: "Gentium Book Basic", Helvetica, Arial, Sans-serif;
+      line-height: 1;
+    }
+
+    a {
+      background: inherit;
+      color: #000;
+    }
+
+    body > header {
+      margin: 0 0 32px 0;
+      padding: 0 0 32px 0;
+      border-bottom: 1px solid #EEE;
+      text-align: center;
+    }
+
+    body > header h1 {
+      background: inherit;
+      color: #000;
+      font-size: 28px;
+      word-spacing: -1px;
+      letter-spacing: 0;
+    }
+
+    body > header h2 {
+      padding: 4px 0 0 0;
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    body > section article header h1 {
+      background: inherit;
+      color: #000;
+      font: 900 36px "Merriweather";
+      letter-spacing: -1px;
+    }
+
+    body > section article header h2 {
+      margin: 4px 0 12px 0;
+      font: 11px "Merriweather";
+    }
+
+    body > section article header h2 a {
+      background: inherit;
+      color: #555;
+    }
+
+    body > section article p {
+      margin: 16px 0 0 0;
+      font: 14px/1.8 "Merriweather";
+    }
+
+    body > section article p:hover a {
+      background: #FFA;
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Writing made minimal.</h1>
+  <h2>A single-page publishing tool written in JavaScript.</h2>
+</header>
+
+<section>
+</section>
+
+<script type="text/post" src="posts/javascript-powered-publishing.markdown"></script>
+
+<script type="text/template" id="posts-show">
+  <article id="post-<%= cid %>">
+    <header>
+      <h1><%- get("title") %></h1>
+      <h2>By <a href="<%= get("author").get("link") %>"><%- get("author").get("name") %></a> on <%= published() %>.</h2>
+
+      <%= body() %>
+    </header>
+  </article>
+</script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="https://raw.github.com/documentcloud/underscore/1.3.1/underscore-min.js"></script>
+<script src="https://raw.github.com/documentcloud/backbone/0.9.1/backbone-min.js"></script>
+<script src="https://raw.github.com/timrwood/moment/1.4.0/moment.min.js"></script>
+<script src="https://raw.github.com/ujifgc/pagedown/master/Markdown.Converter.js"></script>
+<script>
+var Writing = {
+  Collections : {},
+  Models      : {},
+  Routers     : {},
+  Views       : {},
+
+  initialize: function() {
+    this.createCollections()
+        .loadPosts()
+        .createRouters()
+        .start();
+  },
+
+  createCollections: function() {
+    this.posts = new Writing.Collections.Posts();
+
+    return this;
+  },
+
+  createRouters: function() {
+    new Writing.Routers.Posts();
+
+    return this;
+  },
+
+  loadPosts: function() {
+    $('script[type="text/post"]').each(function() {
+      $.get($(this).attr("src"), function(response) {
+        var response = response.split("\n\n"),
+            options  = JSON.parse(response.shift());
+
+        options.author  = new Writing.Models.Author(options.author);
+        options.content = response.join("\n\n");
+
+        Writing.posts.add(options);
+      });
+    });
+
+    return this;
+  },
+
+  start: function() {
+    Backbone.history.start();
+
+    return this;
+  }
+};
+
+$(function() {
+  Writing.initialize();
+});
+
+
+
+
+Writing.Routers.Posts = Backbone.Router.extend({
+  routes: {
+    "" : "index"
+  },
+
+  index: function() {
+    new Writing.Views.Posts.Index({ collection: Writing.posts });
+  }
+});
+
+
+
+
+Writing.Models.Author = Backbone.Model.extend({});
+
+Writing.Models.Post = Backbone.Model.extend({
+  body: function() {
+    return new Markdown.Converter().makeHtml(this.get("content"))
+  },
+
+  published: function(format) {
+    return moment(this.get("published")).format(format || "dddd, MMMM Do YYYY \\at h:mm A");
+  }
+});
+
+
+
+
+Writing.Collections.Posts = Backbone.Collection.extend({
+  model: Writing.Models.Post,
+
+  comparator: function(post) {
+    return new Date(post.get("published")).getDate();
+  }
+});
+
+
+
+
+Writing.Views.Posts = {
+  Index: Backbone.View.extend({
+    el: "body > section",
+
+    initialize: function() {
+      this.$el = $(this.el).attr("id", "posts");
+      this.collection.bind("add", _.bind(this.render, this));
+    },
+
+    render: function() {
+      var container = this.$el.empty();
+
+      this.collection.each(function(post) {
+        container.append(
+          new Writing.Views.Posts._Post({ model: post }).render()
+        );
+      });
+    }
+  }),
+
+  _Post: Backbone.View.extend({
+    tagName  : "article",
+    template : _.template($("#posts-show").text()),
+
+    render: function() {
+      return this.template(this.model);
+    }
+  })
+};
+</script>
+
+</body>
+</html>
