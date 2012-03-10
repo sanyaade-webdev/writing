@@ -152,7 +152,7 @@ var Writing = {
     $('script[type="text/post"]').each(function() {
       $.get($(this).attr("src"), function(response) {
         var response = response.split("\n\n"),
-            options  = JSON.parse(response.shift());
+            options  = JSON.parse(response.shift().replace("```javascript", "").replace("```", ""));
 
         options.author  = new Writing.Models.Author(options.author);
         options.content = response.join("\n\n");

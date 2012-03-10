@@ -1,3 +1,4 @@
+```javascript
 { "title"     : "Introducing Writing",
   "published" : "2012-03-10 16:45:00 -0600",
   "author"    : {
@@ -5,6 +6,7 @@
     "link" : "http://tristandunn.com"
   }
 }
+```
 
 **Writing** is a single-page publishing tool written in JavaScript. It
 utilizies [Backbone][1], [jQuery][2], [Moment][3], [PageDown][4], and
