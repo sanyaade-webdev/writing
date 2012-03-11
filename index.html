@@ -8,10 +8,12 @@
   <style>
     @import url(http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic);
     @import url(http://fonts.googleapis.com/css?family=Merriweather:400,900);
+    @import url(http://codemirror.net/theme/lesser-dark.css);
 
     p,
     h1,
     h2,
+    pre,
     body,
     header,
     article,
@@ -100,6 +102,12 @@
       color: #000;
     }
 
+    body > section article .highlight {
+      margin: 16px 0 0 0;
+      padding: 16px;
+      font: 12px/1.6 "Bitstream Vera Sans Mono", "DejaVu Sans Mono", "Monaco", Courier, monospace;
+    }
+
     body > footer {
       margin: 32px 0 0 0;
       padding: 32px 0 0 0;
@@ -135,6 +143,7 @@
 
 <script type="text/post" src="posts/2012-03-10-javascript-powered-publishing.markdown"></script>
 <script type="text/post" src="posts/2012-03-10-supports-multiple-posts.markdown"></script>
+<script type="text/post" src="posts/2012-03-10-code-highlighting.markdown"></script>
 
 <script type="text/template" id="posts-show">
   <article class="post">
@@ -152,6 +161,9 @@
 <script src="https://raw.github.com/documentcloud/backbone/0.9.1/backbone-min.js"></script>
 <script src="https://raw.github.com/timrwood/moment/1.4.0/moment.min.js"></script>
 <script src="https://raw.github.com/ujifgc/pagedown/master/Markdown.Converter.js"></script>
+<script src="http://codemirror.net/lib/codemirror.js"></script>
+<script src="http://codemirror.net/lib/util/runmode.js"></script>
+<script src="http://codemirror.net/mode/javascript/javascript.js"></script>
 <script>
 var Writing = {
   Collections : {},
@@ -232,7 +244,7 @@ Writing.Models.Author = Backbone.Model.extend({});
 
 Writing.Models.Post = Backbone.Model.extend({
   body: function() {
-    return new Markdown.Converter().makeHtml(this.get("content"))
+    return Markdown.HighlightingConverter.makeHtml(this.get("content"));
   },
 
   published: function(format) {
@@ -310,6 +322,47 @@ Writing.Views.Posts = {
     }
   })
 };
+
+
+
+
+Markdown.HighlightingConverter = (function() {
+  var converter = new Markdown.Converter(),
+      hooks     = converter.hooks;
+
+  hooks.chain("preConversion", function(text) {
+    text.split(/\n\n/).forEach(function(block) {
+      var parts = block.match(/^```(.+)\n((.|\n)+)```$/);
+
+      if (!parts) {
+        return;
+      }
+
+      var element = $("<pre>", {
+        "text"          : $.trim(parts[2]),
+        "class"         : "cm-s-lesser-dark highlight",
+        "data-language" : $.trim(parts[1])
+      });
+
+      text = text.replace(block, $("<div>").append(element).html());
+    });
+
+    return text;
+  });
+
+  hooks.chain("postConversion", function(html) {
+    return $("<div>")
+             .append(html)
+             .find("pre.highlight[data-language]")
+               .each(function() {
+                 CodeMirror.runMode($(this).text(), { name: $(this).data("language") }, $(this).get(0));
+               })
+             .end()
+             .html();
+  });
+
+  return converter;
+})();
 </script>
 
 </body>
