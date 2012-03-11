@@ -133,13 +133,13 @@
   <p>Published with <a href="http://github.com/tristandunn/writing">Writing</a> by <a href="http://tristandunn.com">Tristan Dunn</a>.</p>
 </footer>
 
-<script type="text/post" src="posts/javascript-powered-publishing.markdown"></script>
-<script type="text/post" src="posts/supports-multiple-posts.markdown"></script>
+<script type="text/post" src="posts/2012-03-10-javascript-powered-publishing.markdown"></script>
+<script type="text/post" src="posts/2012-03-10-supports-multiple-posts.markdown"></script>
 
 <script type="text/template" id="posts-show">
   <article id="post-<%= id %>">
     <header>
-      <h1><a href="#posts/<%= id %>-<%= get("slug") %>"><%- get("title") %></a></h1>
+      <h1><a href="#posts/<%= get("slug") %>"><%- get("title") %></a></h1>
       <h2>By <a href="<%= get("author").get("link") %>"><%- get("author").get("name") %></a> on <%= published() %>.</h2>
 
       <%= body() %>
@@ -204,19 +204,16 @@ $(function() {
 
 Writing.Routers.Posts = Backbone.Router.extend({
   routes: {
-    ""          : "index",
-    "posts/:id" : "show"
+    ""            : "index",
+    "posts/:slug" : "show"
   },
 
   index: function() {
     new Writing.Views.Posts.Index({ collection: Writing.posts }).render();
   },
 
-  show: function(id) {
-    var id   = id.split("-"),
-        cid  = "c" + id.shift(),
-        slug = id.join("-"),
-        post = Writing.posts.getByCid(cid);
+  show: function(slug) {
+    var post = Writing.posts.findBySlug(slug);
 
     if (post) {
       new Writing.Views.Posts.Show({ model: post }).render();
@@ -269,6 +266,12 @@ Writing.Collections.Posts = Backbone.Collection.extend({
 
   comparator: function(post) {
     return -new Date(post.get("published")).getTime();
+  },
+
+  findBySlug: function(slug) {
+    return this.find(function(post) {
+      return post.slug === slug;
+    });
   }
 });
 
