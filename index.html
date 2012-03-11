@@ -25,6 +25,7 @@
     }
 
     header,
+    footer,
     article,
     section {
       display: block;
@@ -35,7 +36,7 @@
       color: #555;
       width: 704px;
       margin: 0 auto;
-      padding: 32px 32px 0 32px;
+      padding: 32px;
       font-family: "Gentium Book Basic", Helvetica, Arial, Sans-serif;
       line-height: 1;
     }
@@ -98,6 +99,24 @@
       background: #FFA;
       color: #000;
     }
+
+    body > footer {
+      margin: 32px 0 0 0;
+      padding: 32px 0 0 0;
+      border-top: 1px solid #EEE;
+    }
+
+    body > footer p,
+    body > footer p a {
+      background: inherit;
+      color: #666;
+      font-size: 14px;
+    }
+
+    body > footer p a:hover {
+      background: inherit;
+      color: #000;
+    }
   </style>
 </head>
 <body>
@@ -109,6 +128,10 @@
 
 <section>
 </section>
+
+<footer>
+  <p>Published with <a href="http://github.com/tristandunn/writing">Writing</a> by <a href="http://tristandunn.com">Tristan Dunn</a>.</p>
+</footer>
 
 <script type="text/post" src="posts/javascript-powered-publishing.markdown"></script>
 
