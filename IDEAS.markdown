@@ -8,7 +8,6 @@
 
 * Add pagination to posts.
 * Generate an archives page.
-* Support excerpts for posts.
 * Keyboard shortcuts for moving between pages.
 * Allow custom static pages, such as an about page.
 * Configurable layouts for home, post, and archive pages.

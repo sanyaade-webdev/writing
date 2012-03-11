@@ -179,14 +179,31 @@
 <script type="text/post" src="posts/2012-03-10-supports-multiple-posts.markdown"></script>
 <script type="text/post" src="posts/2012-03-10-code-highlighting.markdown"></script>
 
+<script type="text/template" id="posts-index">
+  <% posts.forEach(function(post) { %>
+    <article class="post">
+      <header>
+        <h1><a href="#posts/<%= post.get("id") %>"><%- post.get("title") %></a></h1>
+        <h2>By <%= helper.byline(post.get("author")) %> on <%= helper.formatDate(post.get("published")) %>.</h2>
+      </header>
+
+      <% if (post.get("excerpt")) { %>
+        <%= helper.markdown(post.get("excerpt")) %>
+      <% } else { %>
+        <%= helper.markdown(post.get("content")) %>
+      <% } %>
+    </article>
+  <% }); %>
+</script>
+
 <script type="text/template" id="posts-show">
   <article class="post">
     <header>
       <h1><a href="#posts/<%= post.get("id") %>"><%- post.get("title") %></a></h1>
       <h2>By <%= helper.byline(post.get("author")) %> on <%= helper.formatDate(post.get("published")) %>.</h2>
-
-      <%= helper.markdown(post.get("content")) %>
     </header>
+
+    <%= helper.markdown(post.get("content")) %>
   </article>
 </script>
 
@@ -301,6 +318,7 @@ Writing.Models.Post = Backbone.Model.extend({}, {
         "id"        : url.match(/\/(.+)\.markdown$/)[1],
         "title"     : options.title,
         "author"    : new Writing.Models.Author(options.author),
+        "excerpt"   : options.excerpt,
         "content"   : blocks.join("\n\n"),
         "published" : options.published
       }));
@@ -348,37 +366,22 @@ Writing.Helpers = {
 
 Writing.Views.Posts = {
   Index: Backbone.View.extend({
-    el: "body > section",
+    template : _.template($("#posts-index").text()),
 
     initialize: function() {
       this.collection.bind("add", _.bind(this.render, this));
     },
 
     render: function() {
-      var container = $(this.el).empty();
-
-      this.collection.each(function(post) {
-        container.append(
-          new Writing.Views.Posts._Post({ model: post }).render()
-        );
-      });
+      $("section").html(this.template({ posts: this.collection, helper: Writing.Helpers }));
     }
   }),
 
   Show: Backbone.View.extend({
-    el: "body > section",
-
-    render: function() {
-      $(this.el).html(new Writing.Views.Posts._Post({ model: this.model }).render());
-    }
-  }),
-
-  _Post: Backbone.View.extend({
-    tagName  : "article",
     template : _.template($("#posts-show").text()),
 
     render: function() {
-      return this.template({ post: this.model, helper: Writing.Helpers });
+      $("section").html(this.template({ post: this.model, helper: Writing.Helpers }));
     }
   })
 };
