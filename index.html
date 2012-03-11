@@ -182,10 +182,10 @@
 <script type="text/template" id="posts-show">
   <article class="post">
     <header>
-      <h1><a href="#posts/<%= get("id") %>"><%- get("title") %></a></h1>
-      <h2>By <a href="<%= get("author").get("link") %>"><%- get("author").get("name") %></a> on <%= published() %>.</h2>
+      <h1><a href="#posts/<%= post.get("id") %>"><%- post.get("title") %></a></h1>
+      <h2>By <%= helper.byline(post.get("author")) %> on <%= helper.formatDate(post.get("published")) %>.</h2>
 
-      <%= body() %>
+      <%= helper.markdown(post.get("content")) %>
     </header>
   </article>
 </script>
@@ -280,15 +280,7 @@ Writing.Routers.Posts = Backbone.Router.extend({
 
 Writing.Models.Author = Backbone.Model.extend({});
 
-Writing.Models.Post = Backbone.Model.extend({
-  body: function() {
-    return Markdown.HighlightingConverter.makeHtml(this.get("content"));
-  },
-
-  published: function(format) {
-    return moment(this.get("published")).format(format || "dddd, MMMM Do YYYY \\at h:mm A");
-  }
-}, {
+Writing.Models.Post = Backbone.Model.extend({}, {
   load: function(url, callback) {
     $.get(url, function(response) {
       var blocks  = response.split("\n\n"),
@@ -330,6 +322,30 @@ Writing.Collections.Posts = Backbone.Collection.extend({
 
 
 
+Writing.Helpers = {
+  byline: function(author) {
+    var name = author.get("name") || "Unknown",
+        href = author.get("link");
+
+    if (href) {
+      return $("<div>").append($("<a>", { href: href, text: name })).html();
+    } else {
+      return name;
+    }
+  },
+
+  formatDate: function(date, format) {
+    return moment(date).format(format || "dddd, MMMM Do YYYY \\at h:mm A")
+  },
+
+  markdown: function(text) {
+    return Markdown.HighlightingConverter.makeHtml(text);
+  }
+};
+
+
+
+
 Writing.Views.Posts = {
   Index: Backbone.View.extend({
     el: "body > section",
@@ -362,7 +378,7 @@ Writing.Views.Posts = {
     template : _.template($("#posts-show").text()),
 
     render: function() {
-      return this.template(this.model);
+      return this.template({ post: this.model, helper: Writing.Helpers });
     }
   })
 };
