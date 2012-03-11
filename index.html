@@ -267,7 +267,7 @@ Writing.Collections.Posts = Backbone.Collection.extend({
   model: Writing.Models.Post,
 
   comparator: function(post) {
-    return new Date(post.get("published")).getDate();
+    return -new Date(post.get("published")).getTime();
   }
 });
 
