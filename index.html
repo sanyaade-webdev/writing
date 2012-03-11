@@ -21,9 +21,12 @@
   <p>Published with <a href="http://github.com/tristandunn/writing">Writing</a> by <a href="http://tristandunn.com">Tristan Dunn</a>.</p>
 </footer>
 
-<script type="text/post" src="posts/2012-03-10-javascript-powered-publishing.markdown"></script>
-<script type="text/post" src="posts/2012-03-10-supports-multiple-posts.markdown"></script>
-<script type="text/post" src="posts/2012-03-10-code-highlighting.markdown"></script>
+<% Dir["_posts/*.markdown"].each do |post| %>
+<script type="text/post" src="<%= post[1..-1] %>">
+<%= File.read(post) %>
+</script>
+<% end %>
+
 <script><%= @javascript %></script>
 
 </body>

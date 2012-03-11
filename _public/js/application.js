@@ -35,7 +35,10 @@ var Writing = {
 
   loadPosts: function() {
     $('script[type="text/post"]').each(function() {
-      Writing.Models.Post.load($(this).attr("src"), function(post) {
+      var url  = $(this).attr("src"),
+          text = $(this).text();
+
+      Writing.Models.Post.add(url, text, function(post) {
         Writing.posts.add(post);
       });
     });
@@ -90,31 +93,35 @@ Writing.Routers.Posts = Backbone.Router.extend({
 Writing.Models.Author = Backbone.Model.extend({});
 
 Writing.Models.Post = Backbone.Model.extend({}, {
-  load: function(url, callback) {
-    $.get(url, function(response) {
-      var blocks  = response.split("\n\n"),
-          json    = blocks.shift().replace(/(```javascript\n((.|\n)+)```)/, "$2"),
-          options = {};
+  add: function(url, text, callback) {
+    var blocks  = text.split("\n\n"),
+        json    = blocks.shift().replace(/(```javascript\n((.|\n)+)```)/, "$2"),
+        options = {};
 
-      try {
-        options = JSON.parse(json);
-      } catch(exception) {
-        if (console) {
-          console.warn("Invalid JSON header in", url, "(" + exception.message + ")");
-        }
-
-        return;
+    try {
+      options = JSON.parse(json);
+    } catch(exception) {
+      if (console) {
+        console.warn("Invalid JSON header in", url, "(" + exception.message + ")");
       }
 
-      callback(new Writing.Models.Post({
-        "id"        : url.match(/\/(.+)\.markdown$/)[1],
-        "title"     : options.title,
-        "author"    : new Writing.Models.Author(options.author),
-        "excerpt"   : options.excerpt,
-        "content"   : blocks.join("\n\n"),
-        "published" : options.published
-      }));
-    });
+      return;
+    }
+
+    callback(new Writing.Models.Post({
+      "id"        : url.match(/\/(.+)\.markdown$/)[1],
+      "title"     : options.title,
+      "author"    : new Writing.Models.Author(options.author),
+      "excerpt"   : options.excerpt,
+      "content"   : blocks.join("\n\n"),
+      "published" : options.published
+    }));
+  },
+
+  load: function(url, callback) {
+    $.get(url, _.bind(function(response) {
+      this.add(url, response, callback);
+    }, this));
   }
 });
 
