@@ -52,10 +52,11 @@
       text-align: center;
     }
 
-    body > header h1 {
+    body > header h1 a {
       background: inherit;
       color: #000;
       font-size: 28px;
+      text-decoration: none;
       word-spacing: -1px;
       letter-spacing: 0;
     }
@@ -66,11 +67,12 @@
       font-style: italic;
     }
 
-    body > section article header h1 {
+    body > section article header h1 a {
       background: inherit;
       color: #000;
       font: 900 36px "Merriweather";
       letter-spacing: -1px;
+      text-decoration: none;
     }
 
     body > section article header h2 {
@@ -97,7 +99,7 @@
 <body>
 
 <header>
-  <h1>Writing made minimal.</h1>
+  <h1><a href="#">Writing made minimal.</a></h1>
   <h2>A single-page publishing tool written in JavaScript.</h2>
 </header>
 
@@ -107,9 +109,9 @@
 <script type="text/post" src="posts/javascript-powered-publishing.markdown"></script>
 
 <script type="text/template" id="posts-show">
-  <article id="post-<%= cid %>">
+  <article id="post-<%= id %>">
     <header>
-      <h1><%- get("title") %></h1>
+      <h1><a href="#posts/<%= id %>-<%= get("slug") %>"><%- get("title") %></a></h1>
       <h2>By <a href="<%= get("author").get("link") %>"><%- get("author").get("name") %></a> on <%= published() %>.</h2>
 
       <%= body() %>
@@ -150,14 +152,8 @@ var Writing = {
 
   loadPosts: function() {
     $('script[type="text/post"]').each(function() {
-      $.get($(this).attr("src"), function(response) {
-        var response = response.split("\n\n"),
-            options  = JSON.parse(response.shift().replace("```javascript", "").replace("```", ""));
-
-        options.author  = new Writing.Models.Author(options.author);
-        options.content = response.join("\n\n");
-
-        Writing.posts.add(options);
+      Writing.Models.Post.load($(this).attr("src"), function(post) {
+        Writing.posts.add(post);
       });
     });
 
@@ -180,11 +176,27 @@ $(function() {
 
 Writing.Routers.Posts = Backbone.Router.extend({
   routes: {
-    "" : "index"
+    ""          : "index",
+    "posts/:id" : "show"
   },
 
   index: function() {
-    new Writing.Views.Posts.Index({ collection: Writing.posts });
+    new Writing.Views.Posts.Index({ collection: Writing.posts }).render();
+  },
+
+  show: function(id) {
+    var id   = id.split("-"),
+        cid  = "c" + id.shift(),
+        slug = id.join("-"),
+        post = Writing.posts.getByCid(cid);
+
+    if (post) {
+      new Writing.Views.Posts.Show({ model: post }).render();
+    } else {
+      Writing.Models.Post.load("posts/" + slug + ".markdown", function(post) {
+        new Writing.Views.Posts.Show({ model: post }).render();
+      });
+    }
   }
 });
 
@@ -194,12 +206,30 @@ Writing.Routers.Posts = Backbone.Router.extend({
 Writing.Models.Author = Backbone.Model.extend({});
 
 Writing.Models.Post = Backbone.Model.extend({
+  initialize: function() {
+    this.id = this.cid.replace(/^c/, "");
+  },
+
   body: function() {
     return new Markdown.Converter().makeHtml(this.get("content"))
   },
 
   published: function(format) {
     return moment(this.get("published")).format(format || "dddd, MMMM Do YYYY \\at h:mm A");
+  }
+}, {
+  load: function(url, callback) {
+    $.get(url, function(response) {
+      var response = response.split("\n\n"),
+          json     = response.shift().replace("```javascript", "").replace("```", ""),
+          options  = JSON.parse(json);
+
+      options.slug    = url.split("/").pop().replace(".markdown", "");
+      options.author  = new Writing.Models.Author(options.author);
+      options.content = response.join("\n\n");
+
+      callback(new Writing.Models.Post(options));
+    });
   }
 });
 
@@ -222,18 +252,25 @@ Writing.Views.Posts = {
     el: "body > section",
 
     initialize: function() {
-      this.$el = $(this.el).attr("id", "posts");
       this.collection.bind("add", _.bind(this.render, this));
     },
 
     render: function() {
-      var container = this.$el.empty();
+      var container = $(this.el).empty();
 
       this.collection.each(function(post) {
         container.append(
           new Writing.Views.Posts._Post({ model: post }).render()
         );
       });
+    }
+  }),
+
+  Show: Backbone.View.extend({
+    el: "body > section",
+
+    render: function() {
+      $(this.el).html(new Writing.Views.Posts._Post({ model: this.model }).render());
     }
   }),
 
