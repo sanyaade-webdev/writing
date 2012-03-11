@@ -375,31 +375,30 @@ Markdown.HighlightingConverter = (function() {
       hooks     = converter.hooks;
 
   hooks.chain("preConversion", function(text) {
-    text.split(/\n\n/).forEach(function(block) {
+    return text.split(/\n\n/).map(function(block) {
       var parts = block.match(/^```(.+)\n((.|\n)+)```$/);
 
-      if (!parts) {
-        return;
+      if (parts) {
+        return $("<div>")
+                 .append($("<pre>", {
+                   "text"          : parts[2],
+                   "class"         : "cm-s-lesser-dark highlight",
+                   "data-language" : parts[1]
+                 })).html();
+      } else {
+        return block;
       }
-
-      var element = $("<pre>", {
-        "text"          : $.trim(parts[2]),
-        "class"         : "cm-s-lesser-dark highlight",
-        "data-language" : $.trim(parts[1])
-      });
-
-      text = text.replace(block, $("<div>").append(element).html());
-    });
-
-    return text;
+    }).join("\n\n");
   });
 
   hooks.chain("postConversion", function(html) {
     return $("<div>")
-             .append(html)
+             .html(html)
              .find("pre.highlight[data-language]")
                .each(function() {
-                 CodeMirror.runMode($(this).text(), { name: $(this).data("language") }, $(this).get(0));
+                 var element = $(this);
+
+                 CodeMirror.runMode(element.text(), { name: element.data("language") }, element.get(0));
                })
              .end()
              .html();
