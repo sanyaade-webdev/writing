@@ -291,15 +291,27 @@ Writing.Models.Post = Backbone.Model.extend({
 }, {
   load: function(url, callback) {
     $.get(url, function(response) {
-      var response = response.split("\n\n"),
-          json     = response.shift().replace("```javascript", "").replace("```", ""),
-          options  = JSON.parse(json);
+      var blocks  = response.split("\n\n"),
+          json    = blocks.shift().replace(/(```javascript\n((.|\n)+)```)/, "$2"),
+          options = {};
 
-      options.id      = url.split("/").pop().replace(".markdown", "");
-      options.author  = new Writing.Models.Author(options.author);
-      options.content = response.join("\n\n");
+      try {
+        options = JSON.parse(json);
+      } catch(exception) {
+        if (console) {
+          console.warn("Invalid JSON header in", url, "(" + exception.message + ")");
+        }
 
-      callback(new Writing.Models.Post(options));
+        return;
+      }
+
+      callback(new Writing.Models.Post({
+        "id"        : url.match(/\/(.+)\.markdown$/)[1],
+        "title"     : options.title,
+        "author"    : new Writing.Models.Author(options.author),
+        "content"   : blocks.join("\n\n"),
+        "published" : options.published
+      }));
     });
   }
 });
