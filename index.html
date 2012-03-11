@@ -137,7 +137,7 @@
 <script type="text/post" src="posts/2012-03-10-supports-multiple-posts.markdown"></script>
 
 <script type="text/template" id="posts-show">
-  <article id="post-<%= id %>">
+  <article class="post">
     <header>
       <h1><a href="#posts/<%= get("slug") %>"><%- get("title") %></a></h1>
       <h2>By <a href="<%= get("author").get("link") %>"><%- get("author").get("name") %></a> on <%= published() %>.</h2>
@@ -231,10 +231,6 @@ Writing.Routers.Posts = Backbone.Router.extend({
 Writing.Models.Author = Backbone.Model.extend({});
 
 Writing.Models.Post = Backbone.Model.extend({
-  initialize: function() {
-    this.id = this.cid.replace(/^c/, "");
-  },
-
   body: function() {
     return new Markdown.Converter().makeHtml(this.get("content"))
   },
