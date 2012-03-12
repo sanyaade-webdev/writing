@@ -1,13 +1,7 @@
 #!/usr/bin/env ruby
 
 require "rubygems"
-require "closure-compiler"
-require "ejs"
-require "erb"
-require "optparse"
-require "sass"
-require "sprockets"
-require "yui/compressor"
+require "bundler/setup"
 
 options = {}
 parser  = OptionParser.new do |parser|
