@@ -9,6 +9,9 @@ OptionParser.new do |parser|
   parser.on("--auto", "Auto-regenerate the index.html file.") do
     options[:auto] = true
   end
+  parser.on("--compress", "Enable CSS and JS compression. (Warning: Slow.)") do
+    options[:compress] = true
+  end
   parser.on("--server [PORT]", "Start web server and enable auto-regenerate. (Default port 4001.)") do |port|
     options[:auto] = true
     options[:port] = (port || "4001").to_i
@@ -18,4 +21,10 @@ OptionParser.new do |parser|
   end
 end.parse!
 
-Writing.new(options).start
+instance = Writing.new(options)
+
+if options[:auto]
+  instance.start
+else
+  instance.update
+end

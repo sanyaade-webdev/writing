@@ -19,10 +19,11 @@ class Writing
   # Initializes with the provided options.
   #
   # @param [Hash] options The options for the instance.
-  # @option options [Boolean] :auto    Enable auto-regenerate.
-  # @option options [String]  :root    A custom root directory. (Defaults to +Dir.pwd+.)
-  # @option options [Integer] :port    A port for the server to listen on.
-  # @option options [Boolean] :verbose Enable verbose output.
+  # @option options [Boolean] :auto     Enable auto-regenerate.
+  # @option options [Boolean] :compress Enable CSS and JS compression.
+  # @option options [String]  :root     A custom root directory. (Defaults to +Dir.pwd+.)
+  # @option options [Integer] :port     A port for the server to listen on.
+  # @option options [Boolean] :verbose  Enable verbose output.
   def initialize(options = {})
     @options = options
   end
@@ -50,8 +51,8 @@ class Writing
   def sprockets
     unless @sprockets
       @sprockets = Sprockets::Environment.new(root)
-      @sprockets.js_compressor =  Closure::Compiler.new
-      @sprockets.css_compressor = YUI::CssCompressor.new
+      @sprockets.js_compressor  = Closure::Compiler.new  if options[:compress]
+      @sprockets.css_compressor = YUI::CssCompressor.new if options[:compress]
       @sprockets.append_path(root.join("public"))
       @sprockets.append_path(root.join("public", "js"))
       @sprockets.append_path(root.join("public", "js", "vendor"))

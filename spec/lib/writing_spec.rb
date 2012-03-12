@@ -89,9 +89,10 @@ describe Writing, "#source_for" do
 end
 
 describe Writing, "#sprockets" do
-  let(:closure_compiler) { stub }
+  let(:options)          { { :compress => false } }
   let(:css_compressor)   { stub }
-  let(:environment)      { stub(:append_path => true, :css_compressor= => true, :js_compressor= => true) }
+  let(:closure_compiler) { stub }
+  let(:environment)      { stub(:append_path => true, :css_compressor= => true, :js_compressor= => true, :options => options) }
 
   before do
     Closure::Compiler.stubs(:new => closure_compiler)
@@ -104,12 +105,20 @@ describe Writing, "#sprockets" do
     Sprockets::Environment.should have_received(:new).with(subject.root)
   end
 
-  it "sets the JS compressor to Closure Compiler" do
+  it "does not set the CSS or JS compressor, if compression is not enabled" do
+    subject.sprockets
+    environment.should have_received(:js_compressor=).never
+    environment.should have_received(:css_compressor=).never
+  end
+
+  it "sets the JS compressor to Closure Compiler, if compression is enabled" do
+    subject.options[:compress] = true
     subject.sprockets
     environment.should have_received(:js_compressor=).with(closure_compiler)
   end
 
-  it "sets the CSS compressor to YUI" do
+  it "sets the CSS compressor to YUI, if compression is enabled" do
+    subject.options[:compress] = true
     subject.sprockets
     environment.should have_received(:css_compressor=).with(css_compressor)
   end
