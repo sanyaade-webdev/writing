@@ -1,113 +1,21 @@
 #!/usr/bin/env ruby
 
-require "rubygems"
-require "bundler/setup"
+require "optparse"
+require "writing"
 
 options = {}
-parser  = OptionParser.new do |parser|
+
+OptionParser.new do |parser|
   parser.on("--auto", "Auto-regenerate the index.html file.") do
     options[:auto] = true
   end
-
-  parser.on("--server [PORT]", "Start web server. (Default port 4001.)") do |port|
-    options[:server] = (port || "4001").to_i
+  parser.on("--server [PORT]", "Start web server and enable auto-regenerate. (Default port 4001.)") do |port|
+    options[:auto] = true
+    options[:port] = (port || "4001").to_i
   end
-end
-
-parser.parse!
-
-class Writing
-  def self.process
-    css        = source_for("css/application.css")
-    template   = ERB.new(File.read(root.join("index.html.erb")))
-    javascript = source_for("js/application.js")
-
-    File.open(root.join("index.html"), "w") do |file|
-      file.puts(template.result(binding))
-    end
+  parser.on("--verbose", "Enable verbose output.") do
+    options[:verbose] = true
   end
+end.parse!
 
-  def self.root
-    Pathname.new(File.expand_path(File.join(File.dirname(__FILE__), "..")))
-  end
-
-  private
-
-  def self.source_for(path)
-    sprockets.find_asset(path).source
-  end
-
-  def self.sprockets
-    unless @sprockets
-      @sprockets = Sprockets::Environment.new(root)
-
-      @sprockets.js_compressor  = Closure::Compiler.new
-      @sprockets.css_compressor = YUI::CssCompressor.new
-
-      @sprockets.append_path(root.join("public"))
-      @sprockets.append_path(root.join("public/js"))
-      @sprockets.append_path(root.join("public/js/vendor"))
-    end
-
-    @sprockets
-  end
-end
-
-if options[:auto]
-  require "directory_watcher"
-
-  glob = []
-
-  Dir.chdir(Writing.root) do
-    glob  = Dir["*"].select { |file| File.directory?(file) }
-    glob -= ["bin"]
-    glob  = glob.map { |directory| "#{directory}/**/*" }
-    glob += ["*"]
-  end
-
-  watcher = DirectoryWatcher.new(Writing.root)
-  watcher.glob     = glob
-  watcher.interval = 1
-  watcher.add_observer do |*events|
-    events = events.select do |event|
-      event.path !~ /^#{Writing.root}\/[^\/]+$/ || event.path =~ /\/index.html.erb$/
-    end
-
-    return if events.empty?
-
-    print "[#{Time.now.strftime("%Y-%m-%d %H:%M:%S")}] "
-    print "#{events.size} files changed, regenerating...\n"
-
-    Writing.process
-  end
-
-  watcher.start
-
-  loop do
-    sleep 1000
-  end unless options[:server]
-end
-
-if options[:server]
-  thread = Thread.new do
-    require "thin"
-
-    Thin::Logging.silent = true
-
-    puts "[#{Time.now.strftime("%Y-%m-%d %H:%M:%S")}] Server starting..."
-
-    server = Thin::Server.start("0.0.0.0", options[:server]) do
-      use Rack::Deflater
-      use Rack::Static, :root => Writing.root, :index => "index.html"
-      run lambda {}
-    end
-  end
-
-  trap("INT") do
-    server.stop
-  end
-
-  thread.join
-elsif !options[:auto]
-  Writing.process
-end
+Writing.new(options).start
