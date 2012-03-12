@@ -11,7 +11,7 @@ require "yui/compressor"
 
 options = {}
 parser  = OptionParser.new do |parser|
-  parser.on("--auto", "Auto-regenerate") do
+  parser.on("--auto", "Auto-regenerate the index.html file.") do
     options[:auto] = true
   end
 
