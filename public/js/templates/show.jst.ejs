@@ -1,0 +1,8 @@
+<article class="post">
+  <header>
+    <h1><a href="#posts/<%= post.get("id") %>"><%= post.get("title") %></a></h1>
+    <h2>By <%= helper.byline(post.get("author")) %> on <%= helper.formatDate(post.get("published")) %>.</h2>
+  </header>
+
+  <%= helper.markdown(post.get("content")) %>
+</article>

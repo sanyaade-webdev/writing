@@ -1,0 +1,4 @@
+exclude:
+  - posts
+  - public
+  - index.html.erb
