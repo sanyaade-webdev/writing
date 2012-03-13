@@ -1,4 +1,4 @@
-# writing
+# writing [![Build Status](https://secure.travis-ci.org/tristandunn/writing.png)](http://travis-ci.org/tristandunn/writing)
 
 A single-page publishing tool written in JavaScript.
 
