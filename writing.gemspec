@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   s.add_dependency "sass",              "3.1.15"
   s.add_dependency "sprockets",         "2.3.1"
   s.add_dependency "thin",              "1.3.1"
+  s.add_dependency "thor",              "0.14.6"
   s.add_dependency "yui-compressor",    "0.9.6"
 
   s.add_development_dependency "bourne",    ">= 1.1.1"
