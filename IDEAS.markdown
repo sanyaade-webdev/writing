@@ -1,9 +1,5 @@
 # Ideas
 
-## General
-
-* Add a "new" command to the binary for generating the base files.
-
 ## Interface
 
 * Add pagination to posts.
