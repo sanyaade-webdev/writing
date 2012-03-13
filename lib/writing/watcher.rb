@@ -47,7 +47,7 @@ class Writing
 
       loop do
         sleep(1000)
-      end unless options[:port]
+      end unless options["server"]
     end
 
     # Updates the parent instance, unless the only event
@@ -64,7 +64,7 @@ class Writing
     #
     # @return [Boolean] Whether or not verbose output is enabled.
     def verbose?
-      options[:verbose]
+      options["verbose"]
     end
 
     private

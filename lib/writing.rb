@@ -22,7 +22,7 @@ class Writing
   # @option options [Boolean] :auto     Enable auto-regenerate.
   # @option options [Boolean] :compress Enable CSS and JS compression.
   # @option options [String]  :root     A custom root directory. (Defaults to +Dir.pwd+.)
-  # @option options [Integer] :port     A port for the server to listen on.
+  # @option options [Integer] :server   A port for the server to listen on.
   # @option options [Boolean] :verbose  Enable verbose output.
   def initialize(options = {})
     @options = options
@@ -33,7 +33,7 @@ class Writing
   #
   # @return [Pathname]
   def root
-    Pathname.new(options[:root] || Dir.pwd)
+    Pathname.new(options["root"] || Dir.pwd)
   end
 
   # Returns the compiled source for the asset at the provided +path+.
@@ -51,8 +51,8 @@ class Writing
   def sprockets
     unless @sprockets
       @sprockets = Sprockets::Environment.new(root)
-      @sprockets.js_compressor  = Closure::Compiler.new  if options[:compress]
-      @sprockets.css_compressor = YUI::CssCompressor.new if options[:compress]
+      @sprockets.js_compressor  = Closure::Compiler.new  if options["compress"]
+      @sprockets.css_compressor = YUI::CssCompressor.new if options["compress"]
       @sprockets.append_path(root.join("public"))
       @sprockets.append_path(root.join("public", "js"))
       @sprockets.append_path(root.join("public", "js", "vendor"))
@@ -63,8 +63,8 @@ class Writing
 
   # Start the watcher and server, when enabled.
   def start
-    Watcher.new(self).start if options[:auto]
-    Server.new(self).start  if options[:port]
+    Watcher.new(self).start if options["auto"]
+    Server.new(self).start  if options["server"]
   end
 
   # Compiles the application CSS and JS and renders the +index.html.erb+

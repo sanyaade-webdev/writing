@@ -83,7 +83,7 @@ end
 
 describe Writing::Watcher, "#start" do
   let(:root)     { stub }
-  let(:options)  { { :port => 4001 } }
+  let(:options)  { { "server" => 4001 } }
   let(:watcher)  { stub(:add_observer => true, :start => true) }
   let(:instance) { stub(:root => root, :options => options) }
 
@@ -116,7 +116,7 @@ describe Writing::Watcher, "#start" do
   end
 
   it "creates a sleeping loop when the server is not enabled" do
-    options.delete(:port)
+    options.delete("server")
 
     subject.start
     subject.should have_received(:loop)
@@ -157,12 +157,12 @@ describe Writing::Watcher, "#update" do
 end
 
 describe Writing::Watcher, "#verbose?" do
-  let(:options)  { { :verbose => stub } }
+  let(:options)  { { "verbose" => stub } }
   let(:instance) { stub(:root => stub, :options => options) }
 
   subject { Writing::Watcher.new(instance) }
 
   it "returns the verbose option" do
-    subject.verbose?.should == options[:verbose]
+    subject.verbose?.should == options["verbose"]
   end
 end

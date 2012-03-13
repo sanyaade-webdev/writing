@@ -62,7 +62,7 @@ describe Writing, "#root" do
   end
 
   it "returns the root directory defined in the options as a pathname, when provided" do
-    subject = Writing.new(:root => "/var/www")
+    subject = Writing.new("root" => "/var/www")
     subject.root.should be_a(Pathname)
     subject.root.to_s.should == "/var/www"
   end
@@ -112,13 +112,13 @@ describe Writing, "#sprockets" do
   end
 
   it "sets the JS compressor to Closure Compiler, if compression is enabled" do
-    subject.options[:compress] = true
+    subject.options["compress"] = true
     subject.sprockets
     environment.should have_received(:js_compressor=).with(closure_compiler)
   end
 
   it "sets the CSS compressor to YUI, if compression is enabled" do
-    subject.options[:compress] = true
+    subject.options["compress"] = true
     subject.sprockets
     environment.should have_received(:css_compressor=).with(css_compressor)
   end
@@ -160,7 +160,7 @@ describe Writing, "#start" do
   end
 
   it "creates and starts the server when enabled" do
-    subject = Writing.new(:port => 4001)
+    subject = Writing.new("server" => 4001)
     subject.start
     Writing::Server.should have_received(:new).with(subject)
   end
@@ -172,7 +172,7 @@ describe Writing, "#start" do
   end
 
   it "creates and starts the watcher when enabled" do
-    subject = Writing.new(:auto => true)
+    subject = Writing.new("auto" => true)
     subject.start
     Writing::Watcher.should have_received(:new).with(subject)
   end
@@ -184,7 +184,7 @@ describe Writing, "#start" do
   end
 
   it "creates the watcher before the server" do
-    subject  = Writing.new(:auto => true, :port => 4001)
+    subject  = Writing.new("auto" => true, "server" => 4001)
     sequence = sequence("start")
 
     Writing::Watcher.expects(:new).with(subject).in_sequence(sequence).returns(watcher)

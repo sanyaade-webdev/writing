@@ -21,10 +21,10 @@ class Writing
       root    = self.root
       options = self.options
 
-      Thin::Logging.silent = !options[:verbose]
+      Thin::Logging.silent = !options["verbose"]
 
-      server = Thin::Server.new("0.0.0.0", options[:port]) do
-        use Rack::CommonLogger if options[:verbose]
+      server = Thin::Server.new("0.0.0.0", options["server"]) do
+        use Rack::CommonLogger if options["verbose"]
         use Rack::Deflater
         use Rack::Static, :root => root, :index => "index.html"
         run lambda {}

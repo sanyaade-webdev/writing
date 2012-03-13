@@ -26,7 +26,7 @@ class Application < Thor
   desc "build", "Build the output file"
   method_option :auto,     :type => :boolean, :aliases => "-a", :desc => "Automatically rebuild the output file"
   method_option :compress, :type => :boolean, :aliases => "-c", :desc => "Enable CSS and JS compression"
-  method_option :port,     :type => :numeric, :aliases => "-p", :desc => "Start a server to serve the output file", :default => 4001
+  method_option :server,   :type => :numeric, :aliases => "-s", :desc => "Start a server to serve the output file", :default => 4001, :lazy_default => 4001
   method_option :verbose,  :type => :boolean, :aliases => "-v", :desc => "Enable verbose output"
   def build
     instance = Writing.new(options)

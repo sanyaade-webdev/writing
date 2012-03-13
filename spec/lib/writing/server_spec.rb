@@ -20,7 +20,7 @@ describe Writing::Server, "#start" do
   let(:root)     { stub }
   let(:server)   { stub(:start => true) }
   let(:thread)   { stub(:join => true) }
-  let(:options)  { { :port => 4001, :verbose => false } }
+  let(:options)  { { "server" => 4001, "verbose" => false } }
   let(:instance) { stub(:root => root, :options => options) }
 
   subject { Writing::Server.new(instance) }
@@ -43,14 +43,14 @@ describe Writing::Server, "#start" do
   end
 
   it "sets the server logging to silent when verbose" do
-    subject.options[:verbose] = true
+    subject.options["verbose"] = true
     subject.start
     Thin::Logging.should have_received(:silent=).with(false)
   end
 
   it "creates a server" do
     subject.start
-    Thin::Server.should have_received(:new).with("0.0.0.0", options[:port])
+    Thin::Server.should have_received(:new).with("0.0.0.0", options["server"])
   end
 
   it "does not use or run until server yields" do
@@ -61,7 +61,7 @@ describe Writing::Server, "#start" do
 
   it "uses Rack::CommonLogger when verbose" do
     Thin::Server.stubs(:new).yields.returns(server)
-    subject.options[:verbose] = true
+    subject.options["verbose"] = true
     subject.start
     subject.should have_received(:use).with(Rack::CommonLogger)
   end
