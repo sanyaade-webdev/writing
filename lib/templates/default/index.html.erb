@@ -22,7 +22,7 @@
 </footer>
 
 <% Dir["posts/*.markdown"].each do |post| %>
-<script type="text/post" src="<%= post[1..-1] %>">
+<script type="text/post" src="<%= post %>">
 <%= File.read(post).chomp %>
 </script>
 <% end %>
