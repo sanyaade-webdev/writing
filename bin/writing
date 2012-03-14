@@ -8,6 +8,8 @@ class Application < Thor
 
   default_task :build
 
+  map "update" => "generate"
+
   desc "generate NAME", "Generate a new instance"
   method_option :github,   :type => :boolean, :aliases => "-g", :desc => "Generate for GitHub Pages"
   method_option :template, :type => :string,  :aliases => "-t", :desc => "The template to use", :default => "default"
