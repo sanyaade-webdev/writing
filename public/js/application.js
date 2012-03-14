@@ -48,6 +48,9 @@ var Writing = {
 
   start: function() {
     Backbone.history.start();
+    Backbone.history.bind("route", function() {
+      $(window).scrollTop(0);
+    });
 
     return this;
   }
@@ -163,24 +166,49 @@ Writing.Helpers = {
 
 
 
+Writing.Views.getTemplate = function(template) {
+  return JST["js/templates/" + template]
+};
+
+
+
+
 Writing.Views.Posts = {
   Index: Backbone.View.extend({
-    template : JST["js/templates/index"],
+    template : Writing.Views.getTemplate("posts/index"),
 
     initialize: function() {
+      this.layout = Writing.Views.getTemplate("layouts/index");
       this.collection.bind("add", _.bind(this.render, this));
     },
 
     render: function() {
-      $("section").html(this.template({ posts: this.collection, helper: Writing.Helpers }));
+      $("body")
+        .html(this.layout({
+          content : this.template({
+            posts  : this.collection,
+            helper : Writing.Helpers
+          })
+        }));
     }
   }),
 
   Show: Backbone.View.extend({
-    template : JST["js/templates/show"],
+    template : Writing.Views.getTemplate("posts/show"),
+
+    initialize: function() {
+      this.layout = Writing.Views.getTemplate("layouts/post") ||
+                      Writing.Views.getTemplate("layouts/index");
+    },
 
     render: function() {
-      $("section").html(this.template({ post: this.model, helper: Writing.Helpers }));
+      $("body")
+        .html(this.layout({
+          content : this.template({
+            post   : this.model,
+            helper : Writing.Helpers
+          })
+        }));
     }
   })
 };
